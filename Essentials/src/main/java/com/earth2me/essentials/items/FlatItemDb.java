@@ -4,6 +4,7 @@ import com.earth2me.essentials.ManagedFile;
 import com.earth2me.essentials.utils.EnumUtil;
 import com.earth2me.essentials.utils.MaterialUtil;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -30,7 +31,7 @@ import static com.earth2me.essentials.I18n.tl;
 
 public class FlatItemDb extends AbstractItemDb {
     protected static final Logger LOGGER = Logger.getLogger("Essentials");
-    private static final Gson gson = new Gson();
+    protected static final Gson gson = new GsonBuilder().registerTypeAdapter(ItemData.class, new ItemDataDeserializer()).create();
 
     // Maps primary name to ItemData
     private final transient Map<String, ItemData> items = new HashMap<>();
@@ -224,22 +225,22 @@ public class FlatItemDb extends AbstractItemDb {
     }
 
     public static class ItemData {
-        private Material material;
+        private String material;
         private String[] fallbacks = null;
         private PotionData potionData = null;
         private EntityType entity = null;
 
         ItemData(final Material material) {
-            this.material = material;
+            this.material = material.name();
         }
 
         ItemData(final Material material, final PotionData potionData) {
-            this.material = material;
+            this.material = material.name();
             this.potionData = potionData;
         }
 
         ItemData(final Material material, final EntityType entity) {
-            this.material = material;
+            this.material = material.name();
             this.entity = entity;
         }
 
@@ -262,11 +263,11 @@ public class FlatItemDb extends AbstractItemDb {
 
         public Material getMaterial() {
             if (material == null && fallbacks != null) {
-                material = EnumUtil.getMaterial(fallbacks);
+                material = EnumUtil.getMaterial(fallbacks).name();
                 fallbacks = null; // If fallback fails, don't keep trying to look up fallbacks
             }
 
-            return material;
+            return Material.valueOf(material);
         }
 
         public PotionData getPotionData() {
